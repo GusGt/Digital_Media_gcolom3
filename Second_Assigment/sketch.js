@@ -1,51 +1,98 @@
+let selected;
+let stack;
+
 function setup() {
   createCanvas(1000, 1000);
   background('pink');
   let x;
   let y;
-  let k; //color of brush
+  selected = color('white') //default color
+
+  stack = [
+    new Buttons('red',0),
+    new Buttons('orange',27),
+    new Buttons('yellow',54),
+    new Buttons('lime',81),
+    new Buttons('cyan',108),
+    new Buttons('blue',135),
+    new Buttons('magenta',162),
+    new Buttons('brown',189),
+    new Buttons('white',216),
+    new Buttons('black',243)
+  ];
+
+  
+  
   
 }
 
 function draw() {
   
-  fill('red')
-  square(0,0,25)
-  fill('blue')
-  square(0,25,25)
-  fill('yellow')
-  square(0,50,25)
+ 
 
-  x = mouseX
-  y = mouseY
+    for(let i=0; i < stack.length; i++){
+      stack[i].draw();
+      
+    }
+    
 
 }
 
 function mouseDragged(){
-  fill(k)
-  circle(x,y,10)
+
+  
+
+  fill(selected)
+  circle(mouseX,mouseY,20)
+   
 }
 
 function mousePressed(){
-  if(x <=25 && y < 25 ) {
-    k = 'red'
-    circle(100,100,100)
-  }
-  if(x <= 25 && 25 < y && y <50) {
-    k = 'blue'
+  let isIn = false;
+  for(let i = 0; i < stack.length; i++){
+    if(stack[i].contains(mouseX,mouseY)){
+      selected = stack[i].color;
+      isIn = true;
+      
+    }
   
-    square(100,100,100)
   }
-  if(x <= 25 && 50 < y && y < 75) {
-    k = 'yellow'
-    circle(200,200,200)
-  }
+  console.log("color " + selected);
+  console.log("color" + isIn);
 }
 
 function keyPressed(){
   if(keyCode == ENTER){
     background("pink")
+
+    for(let i=0; i < stack.length; i++){  //redraws selection of colors
+      stack[i].draw();
+    }
+
   }
 
+}
+
+class Buttons{
+  constructor(color,y){
+    this.color = color;
+    this.y = y;
+  }
+  draw(){
+    noStroke();
+    fill(this.color);
+    square(2,this.y,25)
+  }
+
+  contains(x,y){
+
+    let inX = x >= 0 && x <= 25;
+    let inY = y >= this.y && y <= this.y +27;
+
+    //console.log(inX + " " + inY + " "+ x + " " + y + " " + this.y+"") //debugging for contains without this.x
+
+    return inX && inY;
+
+  }
 }
 
