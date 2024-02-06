@@ -3,7 +3,7 @@ let stack;
 
 function setup() {
   createCanvas(1000, 1000);
-  background('pink');
+  background('white');
   let x;
   let y;
   selected = color('white') //default color
@@ -43,7 +43,10 @@ function mouseDragged(){
   
 
   fill(selected)
-  circle(mouseX,mouseY,20)
+  //circle(mouseX,mouseY,20) leaves cuts
+  strokeWeight(20)
+  stroke(selected)
+  line(mouseX,mouseY,pmouseX,pmouseY)
    
 }
 
@@ -63,7 +66,7 @@ function mousePressed(){
 
 function keyPressed(){
   if(keyCode == ENTER){
-    background("pink")
+    background("white")
 
     for(let i=0; i < stack.length; i++){  //redraws selection of colors
       stack[i].draw();
