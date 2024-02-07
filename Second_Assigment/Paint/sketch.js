@@ -6,7 +6,7 @@ function setup() {
   background('white');
   let x;
   let y;
-  selected = color('white') //default color
+  selected = color('black') //default color
 
   stack = [
     new Buttons('red',0),
