@@ -28,7 +28,7 @@ function bounds(spr){
 function WalkU(spr){ //walk up 
   spr.changeAni('up')
   spr.vel.y = -1;
-
+//pine
 }
 
 function WalkD(spr){ //walk down
