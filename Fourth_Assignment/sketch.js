@@ -1,5 +1,7 @@
 let sprite;
-const amount = [];
+let amount = [];
+let spritesheet;
+let vars = []
 
 function preload(){
 
@@ -8,17 +10,25 @@ function preload(){
     die: {row:1, frames: 1}
   };
 
-  for(let i = 1, y = 200; i < 3 < i++;){
-    amount.push(new roach(100,100,100,100,'Assets/roach2.png',animations)); // makes all roaches
-  y += 100;
-}
+   spritesheet = loadImage("Assets/roach2.png")
+
+ 
+   for(i = 0; i < 4; i++){
+  amount[i] = (new roach(random(100,1000),random(100,1000),100,100,spritesheet,animations));
+   }
+    // makes all roaches
+
 
 }
 
 function setup() {
 
   createCanvas(1024,1024);
+  vars = ["WalkUp","WalkDown"];
+}
 
+function mousePressed(){
+  amount[i].squished();
 }
 
 function draw() {
@@ -27,7 +37,7 @@ function draw() {
   
   amount.forEach((character) => {
 
-
+    
     if (kb.pressing('d')) {
       character.walkRight();
     } 
@@ -42,7 +52,9 @@ function draw() {
     }
     else {
       //character.stop();
+      //character.walkRight();
     }
+    
 
     if (character.sprite.x + 20 > width) {
       character.walkLeft();
@@ -56,6 +68,9 @@ function draw() {
     else if (character.sprite.y + 20 > height){
       character.WalkUp();
     }
+    // else if(character.conatins(mouseX,mouseY)){
+    //    character.squished()
+    // }
 
   })
 }
@@ -67,7 +82,6 @@ class roach {
     this.sprite = new Sprite(x,y,width,height);
     this.sprite.spriteSheet = spriteSheet;
     this.sprite.collider = 'none';
-    this.sprite.anis.frameDelay = 8;
     this.sprite.addAnis(animations);
     this.sprite.changeAni('run');
     
@@ -105,9 +119,16 @@ walkDown() {
   this.sprite.rotateTo(180,25)
 }
 
+squished(){
 
+    this.sprite.changeAni("die")
 
 }
 
+spriteClicked() {
 
+  if (this.contains(mouseX,mouseY))
+    this.remove();
+  }
 
+}
