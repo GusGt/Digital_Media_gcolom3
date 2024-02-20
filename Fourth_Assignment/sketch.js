@@ -1,5 +1,5 @@
 let sprite;
-let amount = [];
+const amount = [];
 
 function preload(){
 
@@ -8,11 +8,12 @@ function preload(){
     die: {row:1, frames: 1}
   };
 
+  for(let i = 1, y = 200; i < 3 < i++;){
     amount.push(new roach(100,100,100,100,'Assets/roach2.png',animations)); // makes all roaches
-   
+  y += 100;
 }
 
-
+}
 
 function setup() {
 
@@ -79,6 +80,7 @@ walkRight() {
   this.sprite.vel.x = 1;
   this.sprite.scale.x = 1;
   this.sprite.vel.y = 0;
+  this.sprite.rotateTo(90,25)
 }
 
 walkLeft() {
@@ -86,19 +88,21 @@ walkLeft() {
   this.sprite.vel.x = -1;
   this.sprite.scale.x = -1;
   this.sprite.vel.y = 0;
+  this.sprite.rotateTo(270,25)
 }
 
 walkUp() {
  // this.sprite.changeAni('walkUp');
   this.sprite.vel.y = -1;
   this.sprite.vel.x = 0;
-  this.sprite.rotate++;
+  this.sprite.rotateTo(0,25)
 }
 
 walkDown() {
  // this.sprite.changeAni('walkDown');
   this.sprite.vel.y = 1;
   this.sprite.vel.x = 0;
+  this.sprite.rotateTo(180,25)
 }
 
 
