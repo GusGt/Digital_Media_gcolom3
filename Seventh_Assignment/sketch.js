@@ -70,8 +70,7 @@ function draw() {
     background("grey")
   }
   
-  //background("black");
   fill('yellow');
-  text("Press anywhere to listen,\n*car zips by you on the highway every 4 seconds*\n(press q to stop)", 10, 372);
+  text("Press anywhere to listen,\n*car zips by you on the highway every 4 seconds*\n", 10, 372);
 }
 
