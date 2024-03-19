@@ -1,20 +1,5 @@
-// let noise = new Tone.Noise({
-//   type:"pink",
-//   fadeIn : 10,
-//   fadeOut: 1}
-//   );
 
-// let filter = new Tone.AutoFilter({
-//   frequency: 500,
-//   type : 'sine',
-//   depth: 1,
-//   baseFrequency: 200,
-//     filter : {
-//     type: "lowpass",
-//     rolloff: -24,
-//     Q: 0}});
-
-let dop = new Tone.AmplitudeEnvelope({ //dop for doppler effect
+let dop = new Tone.AmplitudeEnvelope({ //dop for kinda doppler effect
   attack: 0.7, 
   decay:  0.6, 
   sustain: 0, 
@@ -36,12 +21,10 @@ let zoomfilter = new Tone.AutoFilter({
 
 zoomNoise.connect(zoomfilter);
 zoomfilter.toDestination();
-
 //zoom sound
 
 
-// noise.connect(filter);
-// filter.toDestination();
+
 
 let car;
 
@@ -59,11 +42,9 @@ let zoomInt
 
 function mousePressed(){
   
-  //noise.start();
   zoomNoise.start();
   zoomInt = setInterval(zoom, 4000); //repeatedly makes the zoom 
   console.log('press');
-  
   
 }
 
@@ -74,16 +55,19 @@ function zoom(){
   console.log('zoom');
 }
 
-function keyPressed(){
-  if(key=='q'){
+function mouseReleased(){
+  
     clearInterval(zoomInt);
     zoomNoise.stop();
-  }
+
 }
 
 function draw() {
   if(mouseIsPressed){
     background(car);
+  }
+  else{
+    background("grey")
   }
   
   //background("black");
