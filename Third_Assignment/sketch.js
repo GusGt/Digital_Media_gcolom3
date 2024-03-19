@@ -18,8 +18,7 @@ function preload(){
     down: {row:5,col:7,frames:5}
   };
 
-  // roach.push(new Character(100,100,80,80,'Assets/roach2.png',animations));
-  // roach.push(new Character(100,100,80,80,'assets/roach2.png',animations));
+
 
   
 
