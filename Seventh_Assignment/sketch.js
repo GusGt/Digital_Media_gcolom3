@@ -15,10 +15,10 @@
 //     Q: 0}});
 
 let dop = new Tone.AmplitudeEnvelope({ //dop for doppler effect
-  attack: 0.3, 
-  decay:  0.1, 
+  attack: 0.7, 
+  decay:  0.6, 
   sustain: 0, 
-  release: 0.8 
+  release: 1 
 }).toDestination();
 
 let zoomNoise = new Tone.Noise({
@@ -30,8 +30,8 @@ let zoomfilter = new Tone.AutoFilter({
   frequency: 500,
     filter : {
     type: "lowpass",
-    rolloff: -24,
-    Q: 4
+    rolloff: -48,
+    Q: 1
     }});
 
 zoomNoise.connect(zoomfilter);
@@ -43,46 +43,51 @@ zoomfilter.toDestination();
 // noise.connect(filter);
 // filter.toDestination();
 
-
+let car;
 
 function preload(){
   car = loadImage("Assets/car2.png");
 }
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(400, 410);
+  background('grey');
+
 }
+
 let zoomInt
 
 function mousePressed(){
+  
   //noise.start();
   zoomNoise.start();
   zoomInt = setInterval(zoom, 4000); //repeatedly makes the zoom 
   console.log('press');
   
+  
 }
 
 function zoom(){
+  
+  dop.triggerAttackRelease(1);
 
-  for(let i = 0; i <= 3;i++){
-  dop.triggerAttackRelease(+i);
-  }
- 
-  //saw.triggerAttackRelease(300, "2n")
   console.log('zoom');
 }
 
 function keyPressed(){
   if(key=='q'){
-    //noise.stop();
     clearInterval(zoomInt);
     zoomNoise.stop();
   }
 }
 
 function draw() {
-  background(car);
-  fill('yellow')
-  text("Press anywhere to listen,\ncar zips by you on the highway every 4 seconds", 10, 370)
+  if(mouseIsPressed){
+    background(car);
+  }
+  
+  //background("black");
+  fill('yellow');
+  text("Press anywhere to listen,\n*car zips by you on the highway every 4 seconds*\n(press q to stop)", 10, 372);
 }
 
