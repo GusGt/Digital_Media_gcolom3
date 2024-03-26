@@ -14,13 +14,31 @@ let start = false;
 //sounds
 let squishS = new Tone.Player("Assets/squish.wav").toDestination();
 squishS.loop = false;
+
+let missedNoise = new Tone.Player("Assets/DOH.mp3").toDestination();
+missedNoise.loop = false;
+missedNoise.volume.value = -10;
+missedNoise.playbackRate = 1.5;
+
 let ThemeSong = new Tone.Player("Assets/theme.mp3").toDestination();
 ThemeSong.loop = true;
+ThemeSong.volume.value = -6
+
 let EndSong = new Tone.Player("Assets/endSong.mp3").toDestination();
 EndSong.loop = true;
+EndSong.volume.value = -6
+
 let loserSong = new Tone.Player("Assets/gameOver.mp3").toDestination();
 loserSong.loop = true;
+loserSong.volume.value = -6
 
+let startNoise = new Tone.Player("Assets/start2.mp3").toDestination();
+startNoise.loop = false;
+
+let menuSong = new Tone.Player("Assets/menuTrim.mp3").toDestination();
+menuSong.loop = true;
+menuSong.autostart = true;
+menuSong.volume.value = -6
 
 function preload(){
 
@@ -35,11 +53,14 @@ function setup() {
   startButton = createButton('Start Game');
   startButton.size(200,50)
   startButton.position(width/2-100,height/2);
-  startButton.mousePressed(() => {    
+  
+  startButton.mousePressed(() => {  
   startButton.remove(); //remove button
-
+  startNoise.start();
   GameStart();
+  menuSong.stop();
   ThemeSong.start();
+
   amount.forEach((character) => {
     
     character.move();
@@ -57,13 +78,28 @@ function mousePressed(){
       if(dead){
         amount[i].squish();
       }
-
+      // else{
+      //   missedNoise.start();
+      // }
+      
   }
+  for(let i = 0; i < count; i++){
+    let dead = amount[i].contains(mouseX, mouseY);
+    if(!dead){
+      missedNoise.start();
+    }
+    // else{
+    //   missedNoise.start();
+    // }
+    
+}
 
 }
 
 function GameStart(){
+  
   start = true;
+  
   let animations = {
     run: {row:0 , frames: 2},
     die: {row:1, frames: 1}
@@ -72,7 +108,6 @@ function GameStart(){
   for(i = 0; i < count; i++){
     amount[i] = (new roach(random(1,800),random(1,800),100,100,spritesheet,animations));
   }
-
 }
 
 function time(){
@@ -122,6 +157,7 @@ function draw() {
 
     if(end){
       ThemeSong.stop();
+      missedNoise.stop();
       if(score == 0){
         loserSong.start();
       }
@@ -154,7 +190,7 @@ function draw() {
 
 
 class roach {
-
+  
   constructor(x,y,width,height,spriteSheet,animations) {
     this.sprite = new Sprite(x,y,width,height);
     this.sprite.spriteSheet = spriteSheet;
@@ -201,7 +237,7 @@ squish(){
     score++;
     this.checked = true;
     speed++;  //increases speed of each bug once hitting wall
-    ThemeSong.playbackRate +=  0.01; //makes songs faster 
+    ThemeSong.playbackRate +=  0.01; //makes song faster 
   }
 }
 
