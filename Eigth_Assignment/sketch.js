@@ -18,7 +18,7 @@ squishS.loop = false;
 let missedNoise = new Tone.Player("Assets/DOH.mp3").toDestination();
 missedNoise.loop = false;
 missedNoise.volume.value = -10;
-missedNoise.playbackRate = 1.5;
+missedNoise.playbackRate = 1.2;
 
 let ThemeSong = new Tone.Player("Assets/theme.mp3").toDestination();
 ThemeSong.loop = true;
@@ -72,27 +72,20 @@ function setup() {
 }
 
 function mousePressed(){
-  
+
+  let clicked = false;
   for(let i = 0; i < count; i++){
       let dead = amount[i].contains(mouseX, mouseY);
       if(dead){
         amount[i].squish();
+        clicked = true;
       }
-      // else{
-      //   missedNoise.start();
-      // }
-      
-  }
-  for(let i = 0; i < count; i++){
-    let dead = amount[i].contains(mouseX, mouseY);
-    if(!dead){
-      missedNoise.start();
-    }
-    // else{
-    //   missedNoise.start();
-    // }
     
-}
+  }
+ //miss noise check and start
+  if(!clicked){
+    missedNoise.start();
+  }
 
 }
 
@@ -157,7 +150,8 @@ function draw() {
 
     if(end){
       ThemeSong.stop();
-      missedNoise.stop();
+      squishS.dispose();
+      missedNoise.dispose();
       if(score == 0){
         loserSong.start();
       }
