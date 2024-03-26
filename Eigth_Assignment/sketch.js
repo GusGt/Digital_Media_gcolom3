@@ -11,6 +11,16 @@ let resetButton;
 let end = false;
 let start = false;
 
+//sounds
+let squishS = new Tone.Player("Assets/squish.wav").toDestination();
+squishS.loop = false;
+let ThemeSong = new Tone.Player("Assets/theme.mp3").toDestination();
+ThemeSong.loop = true;
+let EndSong = new Tone.Player("Assets/endSong.mp3").toDestination();
+EndSong.loop = true;
+let loserSong = new Tone.Player("Assets/gameOver.mp3").toDestination();
+loserSong.loop = true;
+
 
 function preload(){
 
@@ -25,17 +35,11 @@ function setup() {
   startButton = createButton('Start Game');
   startButton.size(200,50)
   startButton.position(width/2-100,height/2);
+  startButton.mousePressed(() => {    
+  startButton.remove(); //remove button
 
-  
-
-  
-  startButton.mousePressed(() => {
-    
-    startButton.remove(); //remove button
-
-    
   GameStart();
-  
+  ThemeSong.start();
   amount.forEach((character) => {
     
     character.move();
@@ -44,10 +48,7 @@ function setup() {
   
 })
 
-
 }
-
-
 
 function mousePressed(){
   
@@ -58,7 +59,6 @@ function mousePressed(){
       }
 
   }
-
 
 }
 
@@ -72,8 +72,6 @@ function GameStart(){
   for(i = 0; i < count; i++){
     amount[i] = (new roach(random(1,800),random(1,800),100,100,spritesheet,animations));
   }
-
-  
 
 }
 
@@ -121,17 +119,26 @@ function draw() {
     text("You scored: "+ score , width/2-80, height/2 -45);
     end = true;
     }
-    
+
+    if(end){
+      ThemeSong.stop();
+      if(score == 0){
+        loserSong.start();
+      }
+      else{
+        EndSong.start();
+      }
+    }
   
   amount.forEach((character) => {
 
     if (character.sprite.x + 20 > width) {
       character.walkLeft();
     } 
-    else if (character.sprite.x - 20 < 0) {
+    else if (character.sprite.x - 20 < 0 || (character.sprite.x -20 < 190 && character.sprite.y < 90)) {
       character.walkRight();
     }
-    else if (character.sprite.y - 20 < 0 ){
+    else if (character.sprite.y - 20 < 0 || (character.sprite.y -20 < 80 && character.sprite.x < 170) ){
       character.walkDown();
     }
     else if (character.sprite.y + 20 > height){
@@ -188,13 +195,14 @@ squish(){
   this.sprite.vel.y = 0;
   this.sprite.vel.x = 0;
   this.sprite.changeAni('die')
+  squishS.start();
 
   if(!this.checked){
     score++;
     this.checked = true;
     speed++;  //increases speed of each bug once hitting wall
+    ThemeSong.playbackRate +=  0.01; //makes songs faster 
   }
-
 }
 
 stop(){
