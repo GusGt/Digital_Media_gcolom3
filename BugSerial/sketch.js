@@ -2,7 +2,7 @@ let sprite;
 let amount = [];
 let spritesheet;
 let vars = []
-let timeLeft = 30;
+let timeLeft = 60; //more time for joystick guys
 let count = 25;
 let score = 0;
 let speed = 2;
@@ -10,6 +10,15 @@ let startButton;
 let resetButton;
 let end = false;
 let start = false;
+let port;
+let joyX = 0, joyY = 0, sw = 0;
+let connectButton;
+let circleX, circleY;
+let speedStick = 3;
+let cursor;
+let test;
+
+
 
 //sounds
 let squishS = new Tone.Player("Assets/squish.wav").toDestination();
@@ -47,20 +56,32 @@ function preload(){
 }
 
 function setup() {
-
+  
+  port = createSerial();
+  
   createCanvas(800,800);
+  
+  connectButton = createButton("Connect");
+  connectButton.position(width/2-30,height/2+60);
+  connectButton.mousePressed(connect);
+
   
   startButton = createButton('Start Game');
   startButton.size(200,50)
   startButton.position(width/2-100,height/2);
   
+  
   startButton.mousePressed(() => {  
+
   startButton.remove(); //remove button
   startNoise.start();
   GameStart();
   menuSong.stop();
   ThemeSong.start();
-
+  connectButton.remove();
+  cursor = new Sprite();
+  cursor.diameter = 20;
+  
   amount.forEach((character) => {
     
     character.move();
@@ -68,6 +89,10 @@ function setup() {
   })
   
 })
+
+
+
+  
 
 }
 
@@ -89,10 +114,31 @@ function mousePressed(){
 
 }
 
+function joyPressed(){
+
+  let clicked = false;
+  for(let i = 0; i < count; i++){
+      let dead = amount[i].containsJoy(cursor.position.x,cursor.position.y);
+      if(dead){
+        amount[i].squish();
+        clicked = true;
+        port.write('5');
+      }
+    
+      
+    
+  }
+ //miss noise check and start
+  if(!clicked){
+    missedNoise.start();
+  }
+
+}
+
 function GameStart(){
   
   start = true;
-  
+
   let animations = {
     run: {row:0 , frames: 2},
     die: {row:1, frames: 1}
@@ -111,12 +157,59 @@ function time(){
   return timeLeft;
 }
 
+function connect() {
+  if (!port.opened()) {
+    port.open('Arduino', 9600);
+  } else {
+    port.close();
+  }
+
+  connectButton.remove();
+}
+
+
 function draw() {
   background('orange');
+
+  if(sw==1)
+  {
+    joyPressed();
+  }
+  
+  
+
+// start of analog
+
+  let str = port.readUntil("\n");
+  let values = str.split(",");
+  //console.log(values[0]);
+  if (values.length > 2) {
+    joyX = values[0];
+    joyY = values[1];
+    sw = Number(values[2]);
+
+   // console.log("x: ", joyX, "y: ",joyY );
+    if (joyX > 0) {
+      cursor.position.x += speedStick;
+    } else if (joyX < 0) {
+      cursor.position.x -= speedStick;
+    }
+
+    if (joyY > 0) {
+      cursor.position.y += speedStick
+    } else if (joyY < 0) {
+      cursor.position.y -= speedStick;
+    }
+  }
+
+// end of analog
+  
   
   if(!start){
+    textSize(10);
+   
     textSize(30);
-    text("Welcome to Bug Squisher, your only goal,\n squash those bugs, your score depends on it.\n                             -_-", 100,200)
+    text("Welcome to Bug Squisher, your only goal,\n squash those bugs, your score depends on it.\n                             -_-\n         If using JoyStick, MAKE SURE TO \n                     CONNECT FIRST", 100,200)
   }
   else if(start){
     timeLeft = time();
@@ -133,6 +226,7 @@ function draw() {
     text("GAME OVER", width/2-80, height/2);
     text("refresh to try again!", width/2-80, height/2+100); //for the life of me reset button would not work
     text("You scored: "+ score , width/2-80, height/2 -45);
+  
     if(score == 0){
       text("Really? Not even one?" , width/2-120, height/2 -85); //funny potential cue
     }
@@ -159,7 +253,7 @@ function draw() {
         EndSong.start();
       }
     }
-  
+
   amount.forEach((character) => {
 
     if (character.sprite.x + 20 > width) {
@@ -178,9 +272,13 @@ function draw() {
       character.remove();
     }
 
-  })
+  });
+
+
 
 }
+
+
 
 
 class roach {
@@ -225,7 +323,13 @@ squish(){
   this.sprite.vel.y = 0;
   this.sprite.vel.x = 0;
   this.sprite.changeAni('die')
-  squishS.start();
+
+  if(!squishS.state == "Started")
+  {
+    squishS.start();
+  }
+
+  
 
   if(!this.checked){
     score++;
@@ -240,13 +344,20 @@ stop(){
   this.sprite.vel.x = 0;
 }
 
-  contains(){
+  contains(x,y){
 
-        let insideX = mouseX >= this.sprite.x - 40 && mouseX <= this.sprite.x + 40;
-        let insideY = mouseY >= this.sprite.y - 40 && mouseY <= this.sprite.y + 40;
+        let insideX = x >= this.sprite.x - 40 && x <= this.sprite.x + 40;
+        let insideY = y >= this.sprite.y - 40 && y <= this.sprite.y + 40;
 
-        return insideX && insideY;
+        return (insideX && insideY);
   }
+
+  containsJoy(x,y)
+{
+  let insideJX = x >= this.sprite.x - 40 && x <= this.sprite.x + 40;
+  let insideJY = y >= this.sprite.y - 40 && y <= this.sprite.y + 40;
+  return (insideJX && insideJY);
+}
 
   move(){
 
