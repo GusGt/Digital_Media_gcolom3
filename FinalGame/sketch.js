@@ -1,17 +1,17 @@
-let ground, sensor;
+let ground, sensor, added, platform2;
 let jumpHeight = -30;
 let charSpeed = 5;
-let lives = 3;
+let lives = 3, lifes, first, second, third;
 let menu, caveBack, platform, character, score;
-let attack, isAttacking, enemyAttack, enemy, enemyImg;
+let attack, attackE, isAttacking, enemyAttack, enemy, enemyImg, eAttackImg;
 let temp;
 let menuSong, endSong, gameSong;
 let gameEnd, started;
 let enemyKill, death;
-let ninja, damageTaken, enemyDrop, powerUp, attackImg;
-let levelOne, levelTwo, levelThree;
+let ninja, damageTaken, enemyDrop, powerUp, attackImg, anubis;
+let levelOne, levelTwo, levelThree, levelThree2;
 let gunDelay = 3000, hitDelay = 3000;
-let lastFire = 0;
+let lastFire = 0, lastFireE = 0;
 let lastHit = 0;
 let coin, coinImg, buttonImg1, buttonImg2;
 let font2, startButton, startButton2, retryButton;
@@ -25,6 +25,8 @@ let enemyList = [];
 let deathScreenOver, over, fadeIn, fade = 0, fadeAmount = 0;
 let isRetry = false;
 let animations;
+let bossLife = 10, bossDelay = 3000, lastBossHit = 0;
+
 
 
 
@@ -45,8 +47,10 @@ function preload()
   menu = loadImage("Assets/mainMenu.png");
   font2 = loadFont("Assets/MedievalSharp.ttf");
   buttonImg1 = loadImage("Assets/startButton1.png");
-  enemyImg = loadImage("Assets/robot.png")
-  deathScreenOver = loadImage("Assets/deathScreen.png")
+  enemyImg = loadImage("Assets/robot.png");
+  deathScreenOver = loadImage("Assets/deathScreen.png");
+  lifes = loadImage("Assets/lifes.png");
+  eAttackImg = loadImage("Assets/eFire.png");
 
 }
 
@@ -57,6 +61,8 @@ function setup() {
   startButton.mousePressed(gameStart)
   
   attack = new Sprite(-100, 0); //offset, an attack needs to be established somewhere to continue to levels
+  attackE = new Sprite(-100, 0);
+  platform2 = new Sprite(-100, -300, 30, 10);
 
   background(menu);
   textSize(100);
@@ -80,6 +86,21 @@ function draw() {
     {
       background(caveBack);
       
+    }
+    if(lives == 3)
+    {
+      first = image(lifes, 10,10)
+      second =image(lifes, 40,10)
+      third = image(lifes, 70,10)
+    }
+    else if (lives ==2)
+    {
+      first = image(lifes, 10,10)
+      second =image(lifes, 40,10)
+    }
+    else if (lives == 1)
+    {
+      first = image(lifes, 10,10)
     }
   
 
@@ -148,27 +169,63 @@ function draw() {
     }
 
     //end of enemy checks
-    if(attack.overlapping(enemyList[0]) && isAttacking)
+    for(let i = 0; i < 2; i++)
     {
-      defeated(enemyList[0]);
-      score += 5;
-    }
-    else if(attack.overlapping(enemyList[1]) && isAttacking)
-    {
-      defeated(enemyList[1]);
-      score += 5;
-    }
-    else if(ninja.overlapping(enemyList[0]) && (millis() - lastHit > hitDelay))
-    {
-      lives--;
-      lastHit = millis();
-    }
-    else if(ninja.overlapping(enemyList[1]) && (millis() - lastHit > hitDelay))
-    {
-      lives--;
-      lastHit = millis();
+    
+      if(attack.overlapping(enemyList[i]) && isAttacking)
+      {
+        defeated(enemyList[i]);
+        score += 5;
+      }
+      else if(ninja.overlapping(enemyList[i]) && (millis() - lastHit > hitDelay))
+      {
+        lives--;
+        lastHit = millis();
+      }
     }
    
+  }
+  else if(curLev == 3)
+  {
+    if(millis() - lastFireE > gunDelay && bossLife != 0)
+    {
+    eFire(enemyList[2]);
+    lastFireE = millis();
+    }
+    for(let i = 2; i < 3; i++)
+    {
+    
+      if(attack.overlapping(enemyList[2]) && isAttacking)
+      {
+        if(bossLife == 0)
+        {
+        defeated(enemyList[2]);
+        score += 20;
+        }
+        if(millis() - lastBossHit > bossDelay)
+        {
+        bossLife--;
+        lastBossHit = millis();
+        }
+      }
+      else if((ninja.overlapping(enemyList[i]) || ninja.overlapping(attackE)) && (millis() - lastHit > hitDelay))
+      {
+        lives--;
+        lastHit = millis();
+      }
+    }
+
+    if(bossLife == 0 && !added)
+    {
+      added = true;
+      platform2 = new Sprite(1100, 300, 30, 10);
+      platform2.img = platImg;
+      platform2.collider = 'static';
+      
+      
+    }
+    
+
   }
 
  
@@ -219,6 +276,19 @@ function gameOver(){
   fill(0,fade)
   rect(0,0,1600,1000)
   lives = 0;
+}
+
+function eFire(spr){
+  attackE = new Sprite(spr.x, spr.y);
+  attackE.moveTowards(ninja.x,ninja.y,0.009);
+  attackE.rotationSpeed = 1;
+
+  attackE.h = 1;
+  attackE.w = 1;
+  attackE.img = eAttackImg;
+  attackE.collider = 'none';
+  attackE.life = 300;
+  
 }
 
 function fire(spr){
@@ -284,6 +354,12 @@ function jump(spr){
   {
   spr.changeAni('jump');
   spr.vel.y = jumpHeight;
+  }
+
+  else if((curLev == 3 && sensor.overlapping(platform2)) && added)
+  {
+    spr.changeAni('jump');
+    spr.vel.y = jumpHeight;
   }
 }
 
@@ -520,7 +596,7 @@ function levelTwoStart(){
   sensor2_2 = new Sprite(enemyList[0].x+15,enemyList[0].y+40,60,20,'n');
   e2 = new GlueJoint(enemyList[0],sensor2_1);
   e3 = new GlueJoint(enemyList[0],sensor2_2);
-  //sensor2_1.visible = false; sensor2_2.visible = false;
+  sensor2_1.visible = false; sensor2_2.visible = false;
   eWalkR(enemyList[0]);
 
   enemyList[1] = new Sprite(810,470,80,80);
@@ -534,7 +610,7 @@ function levelTwoStart(){
   sensor3_2 = new Sprite(enemyList[1].x+15,enemyList[1].y+40,60,20,'n');
   e4 = new GlueJoint(enemyList[1],sensor3_1);
   e5 = new GlueJoint(enemyList[1],sensor3_2);
-  //sensor3_1.visible = false; sensor3_2.visible = false;
+  sensor3_1.visible = false; sensor3_2.visible = false;
   eWalkL(enemyList[1])
   
 
@@ -543,6 +619,22 @@ function levelTwoStart(){
 }
 
 function levelThreeStart(){
+
+  curLev =3;
+  currentlevel = 2;
+  let animationsEn =  {
+    stand: {row: 0, frames: 1},
+    run:  {row: 0, col: 1,frames: 5}
+  };
+
+  enemyList[2] = new Sprite(540,300,90,150);
+  enemyList[2].spriteSheet = "Assets/anubis.png";
+  enemyList[2].addAnis(animationsEn);
+  enemyList[2].layer = 0;
+  enemyList[2].rotationLock = true;
+  enemyList[2].friction = 0;
+  enemyList[2].collider = 'none';
+  enemyList[2].changeAni("stand");
 
   levelTwo.remove();
   enemyList[0].remove();
@@ -561,44 +653,44 @@ function levelThreeStart(){
 			'                                                                        ',
 			'                                                                        ',
       '                                                                        ',
+      '                             c  c  c  c                                 ',
+      '                                                                         -',
+      '                             -  -  -  -                                      ',
+      '                                                                         -',
+      '                             -        -                                      ',
+      '                                                                         -',
+      '                                                                             ',
+      '                                                                         -',
+      '                                                                           ',
+      '                                                                         -',
+      '                                                                             ',
+      '                                                                         -',
+      '                   -  -      -        -     -  -                            ',
+      '                                                                         -',
+      '                             -  -  -  -                                               ',
+      '-  -                                                                     -',
       '                                                                        ',
+      '                                                            -  -         -',
       '                                                                        ',
+      '                                                                         -',
       '                                                                        ',
+      '                                                                         -',
+      '           -                                -  -  -                     ',
+      '                                                                         -',
       '                                                                        ',
+      '                                                                         -',
       '                                                                        ',
+      '                                                                         -',
+			'                                                             -  -  -    ',
+      ' -  -                                                                    -',
       '                                                                        ',
+      '                                                                         -',
       '                                                                        ',
+      '                                                                         -',
       '                                                                        ',
+      '                                                                         -',
       '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-			'                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      ' -  -  -                                                                ',
+      ' -  -  -  -        -  -  -  -           -  -  -  -  -  -  -  -        -  -  - ',
 		],
 		8,
 		8,
@@ -606,6 +698,6 @@ function levelThreeStart(){
 		16
 	);
 
+    
+
 }
-
-
