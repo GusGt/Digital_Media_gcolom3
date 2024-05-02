@@ -2,11 +2,10 @@ let ground, sensor, added, platform2;
 let jumpHeight = -30;
 let charSpeed = 5;
 let lives = 3, lifes, first, second, third;
-let menu, caveBack, platform, character, score;
+let menu, caveBack, platform, character, score = 0;
 let attack, attackE, isAttacking, enemyAttack, enemy, enemyImg, eAttackImg;
 let temp;
-let menuSong, endSong, gameSong;
-let gameEnd, started;
+let gameEnd = false, started;
 let enemyKill, death;
 let ninja, damageTaken, enemyDrop, powerUp, attackImg, anubis;
 let levelOne, levelTwo, levelThree, levelThree2;
@@ -26,15 +25,52 @@ let deathScreenOver, over, fadeIn, fade = 0, fadeAmount = 0;
 let isRetry = false;
 let animations;
 let bossLife = 10, bossDelay = 3000, lastBossHit = 0;
+let escaped;
 
+//start of sound implementation
 
+let ThemeSong = new Tone.Player("Assets/theme.mp3").toDestination();
+ThemeSong.loop = true;
+ThemeSong.volume.value = -6
 
+let EndSong = new Tone.Player("Assets/endSong.mp3").toDestination();
+EndSong.loop = true;
+EndSong.volume.value = -6
+
+let loserSong = new Tone.Player("Assets/gameOver.mp3").toDestination();
+loserSong.loop = true;
+//loserSong.autostart = true; //testing
+loserSong.volume.value = -6
+
+let menuSong = new Tone.Player("Assets/mainMenu.mp3").toDestination();
+menuSong.loop = true;
+menuSong.autostart = true;
+menuSong.volume.value = -6
+
+let coinSound = new Tone.Player("Assets/grabCoin.mp3").toDestination();
+coinSound.loop = false;
+coinSound.volume.value = -6;
+
+let enemySound = new Tone.Player("Assets/enemyDefeated.mp3").toDestination();
+enemySound.loop = false;
+enemySound.volume.value = -6;
+
+let attackFire = new Tone.Player("Assets/fire.mp3").toDestination();
+attackFire.loop = false;
+attackFire.volume.value = -6;
+
+let bossFire = new Tone.Player("Assets/bossFire.mp3").toDestination();
+bossFire.loop = false;
+bossFire.volume.value = -6;
+
+//end of sound
 
 //stretch features
 let boss;
 let cutScene;
-let bossHealth;
+let bossHealth = 10;
 let upgrade;
+let bossMaxHealth;
 //end of stretch features
 
 
@@ -51,6 +87,7 @@ function preload()
   deathScreenOver = loadImage("Assets/deathScreen.png");
   lifes = loadImage("Assets/lifes.png");
   eAttackImg = loadImage("Assets/eFire.png");
+  escaped = loadImage("Assets/escaped.png")
 
 }
 
@@ -71,165 +108,199 @@ function setup() {
   strokeWeight(5);
   textFont(font2);
   text("ESCAPE THE DUNGEON", width/2, height/2);
+  
 }
 
 function draw() {
 
   //console.log(mouseX, mouseY);
   
-  
-  
   if(started)
   {
-  
-    if(!over)
-    {
-      background(caveBack);
-      
-    }
-    if(lives == 3)
-    {
-      first = image(lifes, 10,10)
-      second =image(lifes, 40,10)
-      third = image(lifes, 70,10)
-    }
-    else if (lives ==2)
-    {
-      first = image(lifes, 10,10)
-      second =image(lifes, 40,10)
-    }
-    else if (lives == 1)
-    {
-      first = image(lifes, 10,10)
-    }
-  
 
-  if(kb.pressed('w')) jump(ninja)
-  if(kb.pressing('d')) WalkR(ninja)
-  else if(kb.pressing('a')) WalkL(ninja)
-  else if(kb.pressing(' ') && (millis() - lastFire > gunDelay))
-  {
-    fire(ninja);
-    lastFire = millis();
-  } 
+    menuSong.stop();
 
-  else Stop(ninja)
-  bounds(ninja); //always checking bounds
-
-  //start of death condition
-
-  if(lives==0 || ninja.y > height)
-  {
-    
-    gameOver();
-
-    
-  }
-
-  //end of death condition
-
-  if(currentlevel == 0 && !changedOnce)
-  {
-    if(ninja.x + 20 > width+10 || kb.pressed('p'))
-    {
-      changedOnce = true;
-      levelTwoStart();
-    }
-  }
-  else if(currentlevel == 1 && !changedTwice)
-  {
-    if(ninja.x + 20 > width+10 || kb.pressed('l'))
-    {
-      changedTwice = true;
-      levelThreeStart();
-    }
-  }
-
-  if(curLev == 2)
-  {
-    console.log(lives);
-    //console.log("here");
-
-    //start of enemy checks
-    if(!(sensor2_2.overlapping(platform)))
-    {
-      eWalkL(enemyList[0]);
-    }
-    else if(!(sensor2_1.overlapping(platform)))
-    {
-      eWalkR(enemyList[0]);
-    }
-    if(!(sensor3_2.overlapping(platform)))
-    {
-      eWalkL(enemyList[1]);
-    }
-    else if(!(sensor3_1.overlapping(platform)))
-    {
-      eWalkR(enemyList[1]);
-    }
-
-    //end of enemy checks
-    for(let i = 0; i < 2; i++)
-    {
-    
-      if(attack.overlapping(enemyList[i]) && isAttacking)
+      if(!over)
       {
-        defeated(enemyList[i]);
-        score += 5;
-      }
-      else if(ninja.overlapping(enemyList[i]) && (millis() - lastHit > hitDelay))
-      {
-        lives--;
-        lastHit = millis();
-      }
-    }
-   
-  }
-  else if(curLev == 3)
-  {
-    if(millis() - lastFireE > gunDelay && bossLife != 0)
-    {
-    eFire(enemyList[2]);
-    lastFireE = millis();
-    }
-    for(let i = 2; i < 3; i++)
-    {
-    
-      if(attack.overlapping(enemyList[2]) && isAttacking)
-      {
-        if(bossLife == 0)
+        background(caveBack);
+        
+        if(lives == 3)
         {
-        defeated(enemyList[2]);
-        score += 20;
+          first = image(lifes, 10,10)
+          second =image(lifes, 40,10)
+          third = image(lifes, 70,10)
         }
-        if(millis() - lastBossHit > bossDelay)
+        else if (lives ==2)
         {
-        bossLife--;
-        lastBossHit = millis();
+          first = image(lifes, 10,10)
+          second =image(lifes, 40,10)
         }
+        else if (lives == 1)
+        {
+          first = image(lifes, 10,10)
+        }
+
       }
-      else if((ninja.overlapping(enemyList[i]) || ninja.overlapping(attackE)) && (millis() - lastHit > hitDelay))
-      {
-        lives--;
-        lastHit = millis();
-      }
-    }
 
-    if(bossLife == 0 && !added)
-    {
-      added = true;
-      platform2 = new Sprite(1100, 300, 30, 10);
-      platform2.img = platImg;
-      platform2.collider = 'static';
+        if(kb.pressed('w')) jump(ninja)
+        if(kb.pressing('d')) WalkR(ninja)
+        else if(kb.pressing('a')) WalkL(ninja)
+        else if(kb.pressing(' ') && (millis() - lastFire > gunDelay))
+        {
+          fire(ninja);
+          lastFire = millis();
+        } 
+
+        else Stop(ninja)
+        bounds(ninja); //always checking bounds
+
+        //start of death condition
+
+        if((lives==0 || ninja.y > height) )
+        {
+          
+          gameOver();
+
+          if(!gameEnd) // just for end song
+          {
+            gameEnd = true;
+            loserSong.start();
+          }
+
+        }
+
+        //end of death condition
+
+        if(currentlevel == 0 && !changedOnce)
+        {
+          if(ninja.x + 20 > width+10 || kb.pressed('p'))
+          {
+            changedOnce = true;
+            levelTwoStart();
+          }
+        }
+        else if(currentlevel == 1 && !changedTwice)
+        {
+          if(ninja.x + 20 > width+10 || kb.pressed('l'))
+          {
+            changedTwice = true;
+            levelThreeStart();
+          }
+        }
+        else if(currentlevel == 2 && !changedThrice)
+        {
+          if(ninja.x + 20 > width+10 || kb.pressed('m'))
+          {
+            changedThrice = true;
+            winnerWinner();
+          }
+        }
+
+        if(curLev == 2)
+        {
+          
+          //console.log("here");
+
+          //start of enemy checks
+          if(!(sensor2_2.overlapping(platform)))
+          {
+            eWalkL(enemyList[0]);
+          }
+          else if(!(sensor2_1.overlapping(platform)))
+          {
+            eWalkR(enemyList[0]);
+          }
+          if(!(sensor3_2.overlapping(platform)))
+          {
+            eWalkL(enemyList[1]);
+          }
+          else if(!(sensor3_1.overlapping(platform)))
+          {
+            eWalkR(enemyList[1]);
+          }
+
+          //end of enemy checks
+          for(let i = 0; i < 2; i++)
+          {
+          
+            if(attack.overlapping(enemyList[i]) && isAttacking)
+            {
+              defeated(enemyList[i]);
+              score += 5;
+            }
+            else if(ninja.overlapping(enemyList[i]) && (millis() - lastHit > hitDelay))
+            {
+              lives--;
+              lastHit = millis();
+            }
+          }
+        
+        }
+
+        else if(curLev == 3)
+        {
+          if(!over)
+          {
+            stroke(0);
+            strokeWeight(4);
+            noFill();
+            rect(750,30,400,20);
+            noStroke();
+            fill('red');
+            rect(750,30,map(bossLife, 0, bossHealth,0,400),20);
+            textSize(20);
+            fill('Yellow');
+            text("Anubis",780,70);
+          }
+
+          if(ninja.x > width/2)
+          {
+            enemyList[2].scale.x = 1; 
+          }
+          else
+          {
+             enemyList[2].scale.x = -1; 
+          }
+
+          if(millis() - lastFireE > gunDelay && bossLife != 0)
+          {
+          eFire(enemyList[2]); //boss
+          lastFireE = millis();
+          }
+
+          for(let i = 2; i < 3; i++)
+          {
+          
+            if(attack.overlapping(enemyList[2]) && isAttacking)
+            {
+              if(bossLife == 0)
+              {
+              defeated(enemyList[2]);
+              score += 20;
+              }
+              if(millis() - lastBossHit > bossDelay)
+              {
+              bossLife--;
+              lastBossHit = millis();
+              }
+            }
+            else if((ninja.overlapping(enemyList[i]) || ninja.overlapping(attackE)) && (millis() - lastHit > hitDelay))
+            {
+              lives--;
+              lastHit = millis();
+            }
+          }
+
+          if(bossLife == 0 && !added)
+          {
+            added = true;
+            platform2 = new Sprite(1100, 300, 30, 10);
+            platform2.img = platImg;
+            platform2.collider = 'static';
+            
+          }
       
-      
-    }
-    
-
-  }
-
- 
-
+        }
   }
   
 }
@@ -237,12 +308,16 @@ function draw() {
 function collect(spr, coin){
 
   coin.remove();
+  coinSound.start();
   score++;
 
 }
 
 function gameOver(){
+  ThemeSong.stop();
+
   allSprites.remove();
+
   over = true;
   isRetry = true;
 
@@ -275,24 +350,31 @@ function gameOver(){
     }
   fill(0,fade)
   rect(0,0,1600,1000)
+  
   lives = 0;
+  bossLife = 0;
+ 
 }
 
 function eFire(spr){
-  attackE = new Sprite(spr.x, spr.y);
-  attackE.moveTowards(ninja.x,ninja.y,0.009);
-  attackE.rotationSpeed = 1;
+  if(bossLife != 0)
+  {
+    bossFire.start();
+    attackE = new Sprite(spr.x, spr.y);
+    attackE.moveTowards(ninja.x,ninja.y);
+    attackE.rotationSpeed = 1;
 
-  attackE.h = 1;
-  attackE.w = 1;
-  attackE.img = eAttackImg;
-  attackE.collider = 'none';
-  attackE.life = 300;
+    attackE.h = 1;
+    attackE.w = 1;
+    attackE.img = eAttackImg;
+    attackE.collider = 'none';
+    attackE.life = 300;
+  }
   
 }
 
 function fire(spr){
-
+ attackFire.start();
  isAttacking = true;
  attack = new Sprite(spr.x, spr.y);
  if(right)
@@ -395,18 +477,40 @@ function resetAll(){
 }
 
 function defeated(spr){
+  enemySound.start();
   spr.remove();
+}
+
+function winnerWinner(){
+  bossLife = 0; //for testing
+  added = true; // for testing
+  over = true;
+  ThemeSong.stop();
+  EndSong.start();
+  allSprites.remove();
+  background(escaped);
+
+  
+
+  fill('black');
+  rect(0,0,300,800);
+  rect(900,0,300,800);
+  textSize(80)
+  textFont(font2);
+  fill('white');
+  textAlign(CENTER);
+  text("YOU FINALLY\n SEE THE LIGHT\n\n\n\n\n\nScore: "+score, width/2, height/2 - 300)
 }
 
 function gameStart(){
   if(isRetry)
   {
-    console.log("here2");
+    
     resetAll();
-    console.log(lives, "here3");
+    
     
   }
-  
+  ThemeSong.start();
   
   startButton.remove();
   started = true;
