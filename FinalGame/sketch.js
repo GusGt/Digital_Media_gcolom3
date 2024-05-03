@@ -95,7 +95,7 @@ function setup() {
   createCanvas(1200, 800);
   startButton = createImg("Assets/startButton1.png");
   startButton.position(width/2-140, height/2);
-  startButton.mousePressed(gameStart)
+  startButton.mousePressed(gameStart);
   
   attack = new Sprite(-100, 0); //offset, an attack needs to be established somewhere to continue to levels
   attackE = new Sprite(-100, 0);
@@ -110,6 +110,14 @@ function setup() {
   text("ESCAPE THE DUNGEON", width/2, height/2);
   
 }
+
+/*
+dev commands
+p - level2
+l - level3
+m - end
+(must be pressed in order to go to each level, cannot go backwards)
+*/
 
 function draw() {
 
@@ -239,7 +247,7 @@ function draw() {
 
         else if(curLev == 3)
         {
-          if(!over)
+          if(!over && bossLife != 0)
           {
             stroke(0);
             strokeWeight(4);
@@ -361,8 +369,10 @@ function eFire(spr){
   {
     bossFire.start();
     attackE = new Sprite(spr.x, spr.y);
-    attackE.moveTowards(ninja.x,ninja.y);
+    attackE.moveTowards(ninja.x,ninja.y,0.009);
+    attackE.rotateTowards(ninja.x,ninja.y);
     attackE.rotationSpeed = 1;
+    attackE.rotationLock = true;
 
     attackE.h = 1;
     attackE.w = 1;
@@ -403,6 +413,10 @@ function bounds(spr){
   if(spr.x - 20 < 0){
     WalkR(spr);
   }
+  // else if(spr.y < 0)
+  // {
+  //   WalkR(spr);
+  // }
 } 
 
 //enemy controls start
@@ -473,7 +487,13 @@ function resetAll(){
   currentlevel = 0;
   started = true;
   over = false;
-  isRetry = false;
+  isRetry = true;
+  bossLife = 10;
+  added = false;
+  EndSong.stop();
+  loserSong.stop();
+  menuSong.start();
+
 }
 
 function defeated(spr){
@@ -507,7 +527,7 @@ function gameStart(){
   {
     
     resetAll();
-    
+    isRetry = false;
     
   }
   ThemeSong.start();
@@ -577,25 +597,17 @@ function gameStart(){
       '                                                                        ',
       '                                                                        ',
       '                                                            c  c  c     ',
-      '     c  c  c                                                             ',
-      '                                                            -  -  -      ',
-      '     -  -  -                                                             ',
+      '     c  c  c                                                            ',
+      '                                                            -  -  -  -  -  -',
+      '     -  -  -                                                            ',
       '                                                                        ',
-      '                                                -  -  -                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                    c  c                                                ',
-      '                                                                        ',
-      '                    -  -           -  -                                     ',
+      '                                                -  -  -                 ',
       '                                                                        ',
       '                                                                        ',
       '                                                                        ',
+      '                     c                                                ',
       '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '                                                                        ',
-      '       -  -  -                                                             ',
+      '                    -  -           -  -                                 ',
       '                                                                        ',
       '                                                                        ',
       '                                                                        ',
@@ -603,7 +615,15 @@ function gameStart(){
       '                                                                        ',
       '                                                                        ',
       '                                                                        ',
-			'g       g       g       g                     g  g                     g'
+      '       -  -  -                                                          ',
+      '                                                                        ',
+      '                                                                        ',
+      '                                                 c  c  c                ',
+      '                                                                        ',
+      '                                                 c  c  c                ',
+      '                                                                        ',
+      '                                                 -  -  -                ',
+			'-  -                                                                    '
 		],
 		8,
 		8,
@@ -635,7 +655,7 @@ function levelTwoStart(){
 			'                                                                        ',
 			'                                                                         -',
 			'                                                                        ',
-			'            c c c                                                        -',
+			'                                                                         -',
 			'                                                                        ',
 			'                                                                         -',
 			'                                                                        ',
@@ -748,13 +768,13 @@ function levelThreeStart(){
   levelThree = new Tiles(
 		[
 			'                                                                        ',
+			'                                 -                                       ',
 			'                                                                        ',
+			'                                 -                                       ',
 			'                                                                        ',
+			'                                 -                                       ',
 			'                                                                        ',
-			'                                                                        ',
-			'                                                                        ',
-			'                                                                        ',
-			'                                                                        ',
+			'                                 -                                       ',
 			'                                                                        ',
       '                                                                        ',
       '                             c  c  c  c                                 ',
