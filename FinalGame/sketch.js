@@ -175,20 +175,20 @@ function draw() {
         
         if(lives == 3)
         {
-          first = image(lifes, 10,10)
-          second =image(lifes, 40,10)
-          third = image(lifes, 70,10)
+          // first = image(lifes, 10,10)
+          // second =image(lifes, 40,10)
+          // third = image(lifes, 70,10)
           port.write('3');
         }
         else if (lives ==2)
         {
-          first = image(lifes, 10,10)
-          second =image(lifes, 40,10)
+          // first = image(lifes, 10,10)
+          // second =image(lifes, 40,10)
           port.write('2');
         }
         else if (lives == 1)
         {
-          first = image(lifes, 10,10)
+          //first = image(lifes, 10,10)
           port.write('1');
         }
 
