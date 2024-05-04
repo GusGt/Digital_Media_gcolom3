@@ -26,6 +26,8 @@ let isRetry = false;
 let animations;
 let bossLife = 10, bossDelay = 3000, lastBossHit = 0;
 let escaped;
+let joyX = 0, joyY = 0, sw = 0;
+let connectButton;
 
 //start of sound implementation
 
@@ -92,7 +94,13 @@ function preload()
 }
 
 function setup() {
+  port = createSerial();
   createCanvas(1200, 800);
+
+  connectButton = createButton("Connect");
+  connectButton.position(width/2-30,height/2+200);
+  connectButton.mousePressed(connect);
+
   startButton = createImg("Assets/startButton1.png");
   startButton.position(width/2-140, height/2);
   startButton.mousePressed(gameStart);
@@ -126,6 +134,39 @@ function draw() {
   if(started)
   {
 
+    // start of analog
+
+    let str = port.readUntil("\n");
+    let values = str.split(",");
+    //console.log(values[0]);
+    if (values.length == 3) {
+      joyX = values[0];
+      joyY = values[1];
+      sw = Number(values[2]);
+
+     console.log("x: ", joyX, "y: ",joyY, " sw: ",sw );
+
+      if (joyX < -100) {
+        WalkR(ninja);
+        
+      } else if (joyX > 100) {
+        WalkL(ninja);
+      }
+      else if (joyY > 100) {
+        jump(ninja);
+      } 
+      else if(sw == 1 && (millis() - lastFire > gunDelay))
+      {
+        fire(ninja);
+        lastFire = millis();
+      }
+      else{
+        Stop(ninja);
+      }
+    }
+
+// end of analog
+
     menuSong.stop();
 
       if(!over)
@@ -137,36 +178,40 @@ function draw() {
           first = image(lifes, 10,10)
           second =image(lifes, 40,10)
           third = image(lifes, 70,10)
+          port.write('3');
         }
         else if (lives ==2)
         {
           first = image(lifes, 10,10)
           second =image(lifes, 40,10)
+          port.write('2');
         }
         else if (lives == 1)
         {
           first = image(lifes, 10,10)
+          port.write('1');
         }
+
 
       }
 
-        if(kb.pressed('w')) jump(ninja)
-        if(kb.pressing('d')) WalkR(ninja)
-        else if(kb.pressing('a')) WalkL(ninja)
-        else if(kb.pressing(' ') && (millis() - lastFire > gunDelay))
-        {
-          fire(ninja);
-          lastFire = millis();
-        } 
+        // if(kb.pressed('w')) jump(ninja)
+        // if(kb.pressing('d')) WalkR(ninja)
+        // else if(kb.pressing('a')) WalkL(ninja)
+        // else if(kb.pressing(' ') && (millis() - lastFire > gunDelay))
+        // {
+        //   fire(ninja);
+        //   lastFire = millis();
+        // } 
+        // else Stop(ninja)
 
-        else Stop(ninja)
         bounds(ninja); //always checking bounds
 
         //start of death condition
 
         if((lives==0 || ninja.y > height) )
         {
-          
+          port.write('0');
           gameOver();
 
           if(!gameEnd) // just for end song
@@ -311,6 +356,16 @@ function draw() {
         }
   }
   
+}
+
+function connect() {
+  if (!port.opened()) {
+    port.open('Arduino', 19200);
+  } else {
+    port.close();
+  }
+
+  connectButton.remove();
 }
 
 function collect(spr, coin){
@@ -596,7 +651,7 @@ function gameStart(){
 			'                                                                        ',
       '                                                                        ',
       '                                                                        ',
-      '                                                            c  c  c     ',
+      '                                                            c     c     ',
       '     c  c  c                                                            ',
       '                                                            -  -  -  -  -  -',
       '     -  -  -                                                            ',
@@ -618,9 +673,9 @@ function gameStart(){
       '       -  -  -                                                          ',
       '                                                                        ',
       '                                                                        ',
-      '                                                 c  c  c                ',
+      '                                                 c     c                ',
       '                                                                        ',
-      '                                                 c  c  c                ',
+      '                                                    c                   ',
       '                                                                        ',
       '                                                 -  -  -                ',
 			'-  -                                                                    '
